@@ -1,0 +1,10 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {localDate,availableSlots,createBooking,cancelBooking} from "../scheduler.js";
+test("date validation",()=>assert.throws(()=>localDate("2026-02-30")));
+test("day has sixteen half-hour slots",()=>assert.equal(availableSlots("2026-11-05").length,16));
+test("reserved slot disappears",()=>assert.ok(!availableSlots("2026-11-05",[{date:"2026-11-05",time:"09:00"}]).includes("09:00")));
+test("booking reserves a slot",()=>assert.equal(availableSlots("2026-11-05",createBooking([],{date:"2026-11-05",time:"09:00",name:"Ada"})).length,15));
+test("double booking rejected",()=>{const b=createBooking([],{date:"2026-11-05",time:"09:00",name:"Ada"});assert.throws(()=>createBooking(b,{date:"2026-11-05",time:"09:00",name:"John"}));});
+test("cancel restores availability",()=>{const b=createBooking([],{date:"2026-11-05",time:"09:00",name:"Ada"});assert.equal(availableSlots("2026-11-05",cancelBooking(b,b[0].id)).length,16);});
+test("invalid name rejected",()=>assert.throws(()=>createBooking([],{date:"2026-11-05",time:"09:00",name:"A"})));
